@@ -209,7 +209,7 @@ export default {
       }
     }
   },
-  created () {
+  mounted () {
     document.addEventListener('keydown', this.onKeyDown)
   },
   beforeDestroy () {
