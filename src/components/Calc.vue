@@ -349,15 +349,16 @@ button::-moz-focus-inner {
   font-weight: 600;
   font-size: 18px;
   background-color: lightgray;
-  height: 40px;
-  width: 280px;
+  padding: 12px 20px;
 }
 
 .checkbox_label > span {
+  margin-left: 10px;
   color: orange
 }
 
 .active_box > span  {
+  margin-right: -7px;
   color: orangered
 }
 
