@@ -1,30 +1,50 @@
 <template>
   <div class="content">
+    <div class="check">
+      <input type="checkbox" id="checkbox" v-model="checked">
+      <label
+        for="checkbox"
+        class="checkbox_label"
+        :class="{ active_box: !checked }"
+      >
+        Show number buttons:<span>{{ checked }}</span>
+      </label>
+    </div>
     <div class="wrapper">
       <div class="display">{{ display }}</div>
       <div class="grid__wrapper">
         <button @click="clear" class="btn">{{ clearBtn }}</button>
-        <button @click="del" class="btn">←</button>
         <button @click="percent" class="btn">%</button>
-        <button @click="calc" v-bind:class="{active: currentOperetion === '/' && inputNewNumber}" class="btn btn__calc">/</button>
-        <button @click="displayNumber" class="btn btn__number">7</button>
-        <button @click="displayNumber" class="btn btn__number">8</button>
-        <button @click="displayNumber" class="btn btn__number">9</button>
-        <button @click="calc" v-bind:class="{active: currentOperetion === '*' && inputNewNumber}" class="btn btn__calc">*</button>
-        <button @click="displayNumber" class="btn btn__number">4</button>
-        <button @click="displayNumber" class="btn btn__number">5</button>
-        <button @click="displayNumber" class="btn btn__number">6</button>
-        <button @click="calc" v-bind:class="{active: currentOperetion === '-' && inputNewNumber}" class="btn btn__calc">-</button>
-        <button @click="displayNumber" class="btn btn__number">1</button>
-        <button @click="displayNumber" class="btn btn__number">2</button>
-        <button @click="displayNumber" class="btn btn__number">3</button>
-        <button @click="calc" class="btn btn__calc" v-bind:class="{active: currentOperetion === '+' && inputNewNumber}">+</button>
-        <button @click="displayNumber" class="btn btn__number btn__null">0</button>
-        <button @click="dot" class="btn btn__number">.</button>
-        <button @click="calc" class="btn btn__number">=</button>
+        <button @click="del" class="btn btn__del">←</button>
+        <button
+          v-for="(operetion, item) in operetionKeys"
+          :key="'Op' + item"
+          @click="calc(operetion)"
+          v-bind:class="{ active: currentOperetion === operetion && inputNewNumber }"
+          class="btn btn__calc"
+        >
+          {{ operetion }}
+        </button>
+        <transition name="fade">
+          <div
+            v-if="checked"
+            class="hidden__button"
+          >
+            <button
+              v-for="(btn, item) in numberKeys"
+              :key="item"
+              @click="displayNumber(btn)"
+              class="btn btn__number"
+            >
+              {{ btn }}
+            </button>
+            <button @click="dot" class="btn btn__number">.</button>
+            <button @click="calc" class="btn btn__number">=</button>
+          </div>
+        </transition>
       </div>
     </div>
-   </div>
+  </div>
 </template>
 
 <script>
@@ -36,23 +56,28 @@ export default {
       inputNewNumber: false,
       currentTotal: 0,
       currentOperetion: '',
-      clearBtn: 'AC'
+      clearBtn: 'AC',
+      numberKeys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+      operetionKeys: ['/', '*', '-', '+'],
+      checked: false
     }
   },
   methods: {
     onKeyDown (e) {
-      if ((e.key).match(/\./)) {
+      if (e.key.match(/\./)) {
         this.dot()
-      } else if ((e.key).match(/[0-9]/)) {
+      } else if (e.key.match(/[0-9]/)) {
         this.displayNumber(e)
-      } else if ((e.key).match(/%/)) {
+      } else if (e.key.match(/%/)) {
         this.percent()
-      } else if ((e.key).match(/Enter/)) {
+      } else if (e.key.match(/Enter/)) {
         this.calc(e)
-      } else if ((e.key).match(/[-+*/]/)) {
+      } else if (e.key.match(/[-+*/]/)) {
         this.calc(e)
-      } else if ((e.key).match(/Backspace/)) {
+      } else if (e.key.match(/Backspace/)) {
         this.del()
+      } else if (e.key.match(/Esc/)) {
+        this.clear()
       }
     },
     calc (e) {
@@ -64,7 +89,7 @@ export default {
           inputOperetion = e.key
         }
       } else {
-        inputOperetion = e.target.textContent
+        inputOperetion = e
       }
       const op = this.currentOperetion
       const inputNumber = +this.display
@@ -115,7 +140,7 @@ export default {
       if (op === '') {
         inputNumber = inputNumber / 100
       } else {
-        inputNumber = inputNumber / 100 * this.currentTotal
+        inputNumber = (inputNumber / 100) * this.currentTotal
       }
 
       this.display = inputNumber
@@ -129,7 +154,7 @@ export default {
       if (e.type === 'keydown') {
         inputNumber = e.key
       } else {
-        inputNumber = e.target.textContent
+        inputNumber = e
       }
 
       if (this.inputNewNumber) {
@@ -196,18 +221,20 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 * {
-    margin: 0;
-    padding: 0;
-    border: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 button::-moz-focus-inner {
-    padding: 0;
-    border: 0;
+  padding: 0;
+  border: 0;
 }
 
 .content {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   padding-top: 30px;
 }
@@ -226,7 +253,7 @@ button::-moz-focus-inner {
   -moz-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 20px;
+  padding: 20px 0px;
   max-width: 325px;
 }
 
@@ -235,13 +262,19 @@ button::-moz-focus-inner {
   justify-content: space-between;
   align-items: space-between;
   flex-wrap: wrap;
-  height: 410px;
+}
+
+.hidden__button {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .btn {
-
+  margin-bottom: 15px;
   font-weight: 600;
   font-size: 18px;
+  cursor: pointer;
   -ms-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
@@ -252,7 +285,7 @@ button::-moz-focus-inner {
 
   border-radius: 50%;
 
-  background-color:lightgray;
+  background-color: lightgray;
   transition: background-color 0.15s linear;
 
   &:hover {
@@ -278,7 +311,7 @@ button::-moz-focus-inner {
     }
   }
 
-  &__null {
+  &__del {
     width: 155px;
     border-radius: 35px;
   }
@@ -288,4 +321,44 @@ button::-moz-focus-inner {
   background-color: rgb(255, 78, 8);
   color: whitesmoke;
 }
+
+// Анимация при скрытии цифровых клавиш
+.fade-enter-active {
+  transition: all .5s ease;
+}
+.fade-leave-active {
+  transition: all .5s ease;
+}
+.fade-enter, .fade-leave-to {
+  transform: translateY(-30px);
+  opacity: 0;
+}
+
+#checkbox {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+.checkbox_label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 18px;
+  background-color: lightgray;
+  height: 40px;
+  width: 280px;
+}
+
+.checkbox_label > span {
+  color: orange
+}
+
+.active_box > span  {
+  color: orangered
+}
+
 </style>
