@@ -213,7 +213,7 @@ export default {
     document.addEventListener('keydown', this.onKeyDown)
   },
   beforeDestroy () {
-    document.addEventListener('keydown', this.onKeyDown)
+    document.removeEventListener('keydown', this.onKeyDown)
   }
 }
 </script>
